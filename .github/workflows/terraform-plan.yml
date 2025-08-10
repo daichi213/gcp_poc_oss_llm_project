@@ -3,8 +3,12 @@ name: 'ci_terraform_plan'
 on:
   issue_comment:
     types: [created]
+  push:
+    branches:
+      - feature/**
 
 permissions:
+  id-token: 'write' # GCP Workload Identity Federationに必要
   contents: 'read'
   pull-requests: 'write'
 
