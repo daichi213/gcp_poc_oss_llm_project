@@ -5,10 +5,10 @@ on:
     types: [created]
   push:
     branches:
-      - feature/*
+      - feature/**
 
 permissions:
-  id-token: 'write'
+  id-token: 'write' # GCP Workload Identity Federationに必要
   contents: 'read'
   pull-requests: 'write'
 
