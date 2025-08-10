@@ -7,15 +7,14 @@ on:
     branches:
       - feature/**
 
-permissions:
-  id-token: 'write' # GCP Workload Identity Federationに必要
-  contents: 'read'
-  pull-requests: 'write'
-
 jobs:
   plan:
     if: github.event.issue.pull_request && github.event.comment.body == '/terraform plan'
     runs-on: ubuntu-latest
+    permissions:
+      id-token: 'write' # GCP Workload Identity Federationに必要
+      contents: 'read'
+      pull-requests: 'write'
 
     steps:
       - name: 'Checkout'

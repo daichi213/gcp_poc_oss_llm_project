@@ -4,11 +4,6 @@ on:
   issue_comment:
     types: [created]
 
-permissions:
-  id-token: 'write'
-  contents: 'write'
-  pull-requests: 'write'
-
 jobs:
   apply:
     if: |
@@ -16,7 +11,10 @@ jobs:
       github.event.comment.body == '/terraform apply' &&
       (github.event.comment.author_association == 'MEMBER' || github.event.comment.author_association == 'OWNER' || github.event.comment.author_association == 'COLLABORATOR')
     runs-on: ubuntu-latest
-
+    permissions:
+      id-token: 'write'
+      contents: 'write'
+      pull-requests: 'write'
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v4
