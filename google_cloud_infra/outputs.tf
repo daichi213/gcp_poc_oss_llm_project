@@ -1,7 +1,9 @@
+/*
 output "load_balancer_ip" {
   description = "The IP address of the external load balancer."
   value       = google_compute_global_forwarding_rule.default.ip_address
 }
+*/
 
 output "gcs_bucket_name" {
   description = "Name of the GCS bucket for master documents."

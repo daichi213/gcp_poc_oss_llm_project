@@ -27,6 +27,7 @@ resource "google_compute_firewall" "allow_iap_ssh" {
   target_tags = ["allow-ssh"]
 }
 
+/*
 # LBからのヘルスチェックを許可
 resource "google_compute_firewall" "allow_health_check" {
   project = var.project_id
@@ -54,3 +55,4 @@ resource "google_compute_firewall" "allow_http_from_lb" {
   source_tags = ["http-server"] # LB自体にはタグが付かないため、MIGのインスタンスにタグを付ける
   target_tags = ["http-server"]
 }
+*/

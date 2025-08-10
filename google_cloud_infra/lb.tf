@@ -1,3 +1,4 @@
+/*
 resource "google_compute_health_check" "http_health_check" {
   project = var.project_id
   name    = "http-basic-health-check"
@@ -43,3 +44,4 @@ resource "google_compute_global_forwarding_rule" "default" {
   port_range            = "80"
   load_balancing_scheme = "EXTERNAL_MANAGED"
 }
+*/
