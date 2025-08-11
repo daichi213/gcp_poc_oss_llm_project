@@ -16,10 +16,23 @@ jobs:
       contents: 'write'
       pull-requests: 'write'
     steps:
+      - name: 'Get branch name'
+        id: get_branch
+        uses: actions/github-script@v7
+        with:
+          result-encoding: string
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            return pr.data.head.ref;
+
       - name: 'Checkout'
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.issue.pull_request.head.ref }}
+          ref: ${{ steps.get_branch.outputs.result }}
           fetch-depth: 0
 
       - name: 'Authenticate to Google Cloud'
