@@ -22,6 +22,11 @@ jobs:
         with:
           ref: ${{ github.event.issue.pull_request.head.sha }}
 
+      - name: 'Debug Directory Listing'
+        run: |
+          pwd
+          ls -la
+
       - name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@v2'
         with:
