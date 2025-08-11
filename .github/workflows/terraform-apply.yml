@@ -69,14 +69,14 @@ jobs:
             if (init.outcome === 'failure') {
               body = `#### Terraform Init Failed ❌
 
-Terraform init step failed. Please check the workflow logs for more details.`;
+              Terraform init step failed. Please check the workflow logs for more details.`;
             } else if (apply.outcome === 'failure') {
               body = `#### Terraform Apply Failed ❌
 
-Terraform apply step failed. Please check the workflow logs for more details.`;
+              Terraform apply step failed. Please check the workflow logs for more details.`;
             } else {
               body = `#### Terraform Apply Complete
-**Status:** Success :white_check_mark:`;
+              **Status:** Success :white_check_mark:`;
             }
 
             github.rest.issues.createComment({

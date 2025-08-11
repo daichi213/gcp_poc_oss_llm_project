@@ -62,8 +62,8 @@ jobs:
           PLAN_OUTPUT=$(terraform show -no-color tfplan)
           echo "plan_output<<EOF" >> $GITHUB_OUTPUT
           echo "```terraform
-${PLAN_OUTPUT}
-```" >> $GITHUB_OUTPUT
+          ${PLAN_OUTPUT}
+          ```" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
         working-directory: ./google_cloud_infra
 
@@ -79,15 +79,15 @@ ${PLAN_OUTPUT}
             if (init.outcome === 'failure') {
               body = `#### Terraform Init Failed ❌
 
-Terraform init step failed. Please check the workflow logs for more details.`;
+              Terraform init step failed. Please check the workflow logs for more details.`;
             } else if (plan.outcome === 'failure') {
               body = `#### Terraform Plan Failed ❌
 
-Terraform plan step failed. Please check the workflow logs for more details.`;
+              Terraform plan step failed. Please check the workflow logs for more details.`;
             } else {
               body = `#### Terraform Plan Succeeded ✅
 
-${{ steps.format.outputs.plan_output }}`;
+              ${{ steps.format.outputs.plan_output }}`;
             }
 
             github.rest.issues.createComment({
