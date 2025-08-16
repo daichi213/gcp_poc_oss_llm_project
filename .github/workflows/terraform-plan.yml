@@ -62,17 +62,12 @@ jobs:
 
       - name: 'Terraform Plan'
         id: plan
-        run: |
-          terraform plan -no-color -out=tfplan -detailed-exitcode
-          # planコマンドの終了コードをoutputとして保存
-          echo "exit_code=$?" >> $GITHUB_OUTPUT
+        run: terraform plan -no-color -out=tfplan
         working-directory: ./google_cloud_infra
-        continue-on-error: true # 差分あり(exit code 2)の場合もワークフローを続行させるため
 
       - name: 'Terraform Show'
         id: show
-        # planで差分があった場合のみ実行 (exit code 2)
-        if: steps.plan.outputs.exit_code == 2
+        if: steps.plan.outcome == 'success'
         working-directory: ./google_cloud_infra
         run: |
           PLAN_OUTPUT=$(terraform show -no-color tfplan)
@@ -94,22 +89,33 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const { init, validate, plan, show } = ${{ toJson(steps) }};
-            const plan_exit_code = plan.outputs.exit_code;
             let body;
 
             if (init.outcome !== 'success') {
-              body = `#### Terraform Init Failed ❌\n\nPlease check the workflow logs for more details.`;
+              body = `#### Terraform Init Failed ❌
+
+              Please check the workflow logs for more details.`;
             } else if (validate.outcome !== 'success') {
-              body = `#### Terraform Validate Failed ❌\n\nPlease check the workflow logs for more details.`;
-            } else if (plan.outcome === 'failure' || plan_exit_code == 1) {
-              body = `#### Terraform Plan Failed ❌\n\nAn error occurred during the plan. Please check the workflow logs.`;
-            } else if (plan_exit_code == 0) {
-              body = `#### Terraform Plan Succeeded ✅\n\n**No changes.** Your infrastructure matches the configuration.`;
-            } else if (plan_exit_code == 2) {
-              const output = `${{ steps.show.outputs.plan_output }}`;
-              body = `#### Terraform Plan Succeeded ✅\n\nChanges are proposed in the plan below:\n\n${output}`;
+              body = `#### Terraform Validate Failed ❌
+
+              Please check the workflow logs for more details.`;
+            } else if (plan.outcome !== 'success') {
+              body = `#### Terraform Plan Failed ❌
+
+              An error occurred during the plan. Please check the workflow logs.`;
             } else {
-              body = `#### Terraform Plan Status Unknown\n\nThe plan step did not run or returned an unexpected exit code. Please check the workflow logs.`;
+              const output = `${{ steps.show.outputs.plan_output }}`;
+              if (output.includes("No changes. Infrastructure is up-to-date.")) {
+                  body = `#### Terraform Plan Succeeded ✅
+
+                  **No changes.** Your infrastructure matches the configuration.`;
+              } else {
+                  body = `#### Terraform Plan Succeeded ✅
+
+                  Changes are proposed in the plan below:
+
+                  ${output}`;
+              }
             }
 
             github.rest.issues.createComment({
