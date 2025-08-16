@@ -62,7 +62,7 @@ jobs:
 
       - name: 'Terraform Plan'
         id: plan
-        run: terraform plan -out=tfplan
+        run: terraform plan -no-color -out=tfplan
         working-directory: ./google_cloud_infra
 
       - name: 'Terraform Show'
@@ -93,16 +93,16 @@ jobs:
             let body;
 
             if (init.outcome !== 'success') {
-              body = `#### Terraform Init Failed ❌\r\n\r\nPlease check the workflow logs for more details.`;
+              body = `#### Terraform Init Failed ❌\n\nPlease check the workflow logs for more details.`;
             } else if (validate.outcome !== 'success') {
-              body = `#### Terraform Validate Failed ❌\r\n\r\nPlease check the workflow logs for more details.`;
+              body = `#### Terraform Validate Failed ❌\n\nPlease check the workflow logs for more details.`;
             } else if (plan.outcome !== 'success') {
-              body = `#### Terraform Plan Failed ❌\r\n\r\nAn error occurred during the plan. Please check the workflow logs.`;
+              body = `#### Terraform Plan Failed ❌\n\nAn error occurred during the plan. Please check the workflow logs.`;
             } else {
               if (output.includes("No changes. Infrastructure is up-to-date.")) {
-                  body = `#### Terraform Plan Succeeded ✅\r\n\r\n**No changes.** Your infrastructure matches the configuration.`;
+                  body = `#### Terraform Plan Succeeded ✅\n\n**No changes.** Your infrastructure matches the configuration.`;
               } else {
-                  body = `#### Terraform Plan Succeeded ✅\r\n\r\nChanges are proposed in the plan below:\r\n\r\n\`\`\`terraform\r\n${output}\r\n\`\`\``;
+                  body = `#### Terraform Plan Succeeded ✅\n\nChanges are proposed in the plan below:\n\n<details><summary>詳細</summary>\n\n```terraform\n${output}\n```\n</details>`;
               }
             }
 
