@@ -94,7 +94,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const { init, validate, plan, show } = ${{ toJson(steps) }};
-            const plan_exit_code = steps.plan.outputs.exit_code;
+            const plan_exit_code = plan.outputs.exit_code;
             let body;
 
             if (init.outcome !== 'success') {
