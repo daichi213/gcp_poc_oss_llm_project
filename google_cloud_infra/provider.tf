@@ -1,6 +1,6 @@
 terraform {
   backend "gcs" {
-    bucket = "<YOUR_TERRAFORM_STATE_BUCKET_NAME>" # 事前に作成したGCSバケット名を指定してください
-    prefix = "terraform/state"
+    bucket = "terraform_poc_closed_llm" # 事前に作成したGCSバケット名を指定してください
+    key = "root/default.tfstate"
   }
 }
