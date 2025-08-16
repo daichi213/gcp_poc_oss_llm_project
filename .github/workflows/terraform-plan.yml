@@ -9,9 +9,9 @@ jobs:
     if: github.event.issue.pull_request && github.event.comment.body == '/terraform plan'
     runs-on: ubuntu-latest
     permissions:
-      id-token: 'write' # GCP Workload Identity Federationに必要
+      id-token: 'write'       # GCP Workload Identity Federationに必要
       contents: 'read'
-      pull-requests: 'write'
+      pull-requests: 'write'  # PRへのコメント投稿に必要
 
     steps:
       - name: 'Get branch name'
@@ -31,7 +31,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ steps.get_branch.outputs.result }}
-          fetch-depth: 0
 
       - name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@v2'
@@ -39,70 +38,78 @@ jobs:
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER_CI }}
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_CI }}
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+      - name: 'Setup Terraform'
+        uses: hashicorp/setup-terraform@v3 # バージョンをv3に更新
         with:
           terraform_version: 1.5.4
 
-      - name: Cache Terraform providers
+      # Cacheステップはディレクトリ指定を修正
+      - name: 'Cache Terraform providers'
         uses: actions/cache@v3
         with:
-          path: gcp_poc_oss_llm_project/.terraform
-          key: ${{ runner.os }}-terraform-${{ hashFiles('gcp_poc_oss_llm_project/.terraform.lock.hcl') }}
-          restore-keys: |
-            ${{ runner.os }}-terraform-
+          path: ./google_cloud_infra/.terraform
+          key: ${{ runner.os }}-terraform-${{ hashFiles('./google_cloud_infra/.terraform.lock.hcl') }}
 
-      - name: Terraform Init
+      - name: 'Terraform Init'
         id: init
-        run: terraform init
+        run: terraform init -no-color
         working-directory: ./google_cloud_infra
-        continue-on-error: true
 
-      - name: Terraform Validate
+      - name: 'Terraform Validate'
         id: validate
         run: terraform validate -no-color
         working-directory: ./google_cloud_infra
-        continue-on-error: true
 
-      - name: Terraform Plan
+      - name: 'Terraform Plan'
         id: plan
-        run: terraform plan -out=tfplan
+        run: |
+          terraform plan -no-color -out=tfplan -detailed-exitcode
+          # planコマンドの終了コードをoutputとして保存
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
         working-directory: ./google_cloud_infra
-        continue-on-error: true
+        continue-on-error: true # 差分あり(exit code 2)の場合もワークフローを続行させるため
 
-      - name: Terraform Show
+      - name: 'Terraform Show'
         id: show
+        # planで差分があった場合のみ実行 (exit code 2)
+        if: steps.plan.outputs.exit_code == 2
+        working-directory: ./google_cloud_infra
         run: |
           PLAN_OUTPUT=$(terraform show -no-color tfplan)
-          echo "plan_output<<EOF" >> $GITHUB_OUTPUT
-          echo "```terraform
-          ${PLAN_OUTPUT}
-          ```" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-        working-directory: ./google_cloud_infra
-        continue-on-error: true
+
+          # マルチラインの出力を安全に次のステップに渡す
+          DELIMITER=$(openssl rand -hex 8)
+          {
+            echo "plan_output<<$DELIMITER"
+            echo '```terraform'
+            echo "$PLAN_OUTPUT"
+            echo '```'
+            echo "$DELIMITER"
+          } >> "$GITHUB_OUTPUT"
 
       - name: 'Comment on PR'
         uses: actions/github-script@v7
-        if: always()
+        if: always() # 常に実行して結果をレポート
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { init, plan } = ${{ toJson(steps) }};
+            const { init, validate, plan, show } = ${{ toJson(steps) }};
+            const plan_exit_code = steps.plan.outputs.exit_code;
             let body;
 
-            if (init.outcome === 'failure') {
-              body = `#### Terraform Init Failed ❌
-
-              Terraform init step failed. Please check the workflow logs for more details.`;
-            } else if (plan.outcome === 'failure') {
-              body = `#### Terraform Plan Failed ❌
-
-              Terraform plan step failed. Please check the workflow logs for more details.`;
+            if (init.outcome !== 'success') {
+              body = `#### Terraform Init Failed ❌\n\nPlease check the workflow logs for more details.`;
+            } else if (validate.outcome !== 'success') {
+              body = `#### Terraform Validate Failed ❌\n\nPlease check the workflow logs for more details.`;
+            } else if (plan.outcome === 'failure' || plan_exit_code == 1) {
+              body = `#### Terraform Plan Failed ❌\n\nAn error occurred during the plan. Please check the workflow logs.`;
+            } else if (plan_exit_code == 0) {
+              body = `#### Terraform Plan Succeeded ✅\n\n**No changes.** Your infrastructure matches the configuration.`;
+            } else if (plan_exit_code == 2) {
+              const output = `${{ steps.show.outputs.plan_output }}`;
+              body = `#### Terraform Plan Succeeded ✅\n\nChanges are proposed in the plan below:\n\n${output}`;
             } else {
-              body = `#### Terraform Plan Succeeded ✅
-
-              ${{ steps.show.outputs.plan_output }}`;
+              body = `#### Terraform Plan Status Unknown\n\nThe plan step did not run or returned an unexpected exit code. Please check the workflow logs.`;
             }
 
             github.rest.issues.createComment({
