@@ -78,7 +78,13 @@ jobs:
 
       - name: Terraform Show
         id: show
-        run: terraform show -no-color tfplan
+        run: |
+          PLAN_OUTPUT=$(terraform show -no-color tfplan)
+          echo "plan_output<<EOF" >> $GITHUB_OUTPUT
+          echo "```terraform
+          ${PLAN_OUTPUT}
+          ```" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
         working-directory: ./google_cloud_infra
         continue-on-error: true
 
@@ -102,7 +108,7 @@ jobs:
             } else {
               body = `#### Terraform Plan Succeeded ✅
 
-              ${{ steps.format.outputs.plan_output }}`;
+              ${{ steps.format.show.plan_output }}`;
             }
 
             github.rest.issues.createComment({
