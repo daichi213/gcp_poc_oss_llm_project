@@ -41,10 +41,20 @@ jobs:
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER_CD }}
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_CD }}
 
-      - name: 'Set up Terraform'
-        uses: hashicorp/setup-terraform@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.4
 
-      - name: 'Terraform Init'
+      - name: Cache Terraform providers
+        uses: actions/cache@v3
+        with:
+          path: gcp_poc_oss_llm_project/.terraform
+          key: ${{ runner.os }}-terraform-${{ hashFiles('gcp_poc_oss_llm_project/.terraform.lock.hcl') }}
+          restore-keys: |
+            ${{ runner.os }}-terraform-
+
+      - name: Terraform Init
         id: init
         run: terraform init
         working-directory: ./google_cloud_infra
