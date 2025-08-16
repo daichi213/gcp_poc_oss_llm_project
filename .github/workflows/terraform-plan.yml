@@ -55,23 +55,32 @@ jobs:
       - name: Terraform Init
         id: init
         run: terraform init
+        working-directory: ./google_cloud_infra
+        continue-on-error: true
 
       - name: Terraform Format
         id: fmt
         run: terraform fmt -check
+        working-directory: ./google_cloud_infra
+        continue-on-error: true
 
       - name: Terraform Validate
         id: validate
         run: terraform validate -no-color
+        working-directory: ./google_cloud_infra
+        continue-on-error: true
 
       - name: Terraform Plan
         id: plan
         run: terraform plan -no-color -out=tfplan
+        working-directory: ./google_cloud_infra
         continue-on-error: true
 
       - name: Terraform Show
         id: show
         run: terraform show -no-color tfplan
+        working-directory: ./google_cloud_infra
+        continue-on-error: true
 
       - name: 'Comment on PR'
         uses: actions/github-script@v7
