@@ -105,17 +105,12 @@ jobs:
               An error occurred during the plan. Please check the workflow logs.`;
             } else {
               const output = `${{ steps.show.outputs.plan_output }}`;
-              if (output.includes("No changes. Infrastructure is up-to-date.")) {
-                  body = `#### Terraform Plan Succeeded ✅
+              
+              body = `#### Terraform Plan Succeeded ✅
 
-                  **No changes.** Your infrastructure matches the configuration.`;
-              } else {
-                  body = `#### Terraform Plan Succeeded ✅
+              Changes are proposed in the plan below:
 
-                  Changes are proposed in the plan below:
-
-                  ${output}`;
-              }
+              ${output}`;
             }
 
             github.rest.issues.createComment({
