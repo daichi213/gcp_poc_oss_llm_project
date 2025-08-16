@@ -55,27 +55,23 @@ jobs:
       - name: Terraform Init
         id: init
         run: terraform init
-        working-directory: ./google_cloud_infra
-        continue-on-error: true
 
-      - name: 'Terraform Plan'
+      - name: Terraform Format
+        id: fmt
+        run: terraform fmt -check
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
         id: plan
-        if: steps.init.outcome == 'success'
         run: terraform plan -no-color -out=tfplan
-        working-directory: ./google_cloud_infra
         continue-on-error: true
 
-      - name: 'Format Plan Output'
-        id: format
-        if: steps.plan.outcome == 'success'
-        run: |
-          PLAN_OUTPUT=$(terraform show -no-color tfplan)
-          echo "plan_output<<EOF" >> $GITHUB_OUTPUT
-          echo "```terraform
-          ${PLAN_OUTPUT}
-          ```" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-        working-directory: ./google_cloud_infra
+      - name: Terraform Show
+        id: show
+        run: terraform show -no-color tfplan
 
       - name: 'Comment on PR'
         uses: actions/github-script@v7
