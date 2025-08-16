@@ -41,6 +41,12 @@ jobs:
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER_CD }}
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_CD }}
 
+      - name: 'Download Terraform Plan'
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan-${{ github.event.issue.number }}
+          path: ./google_cloud_infra
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
@@ -63,7 +69,7 @@ jobs:
       - name: 'Terraform Apply'
         id: apply
         if: steps.init.outcome == 'success'
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve -no-color tfplan
         working-directory: ./google_cloud_infra
         continue-on-error: true
 
