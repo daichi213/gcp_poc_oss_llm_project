@@ -102,7 +102,7 @@ jobs:
               if (output.includes("No changes. Infrastructure is up-to-date.")) {
                   body = `#### Terraform Plan Succeeded ✅\r\n\r\n**No changes.** Your infrastructure matches the configuration.`;
               } else {
-                  body = `#### Terraform Plan Succeeded ✅\r\n\r\nChanges are proposed in the plan below:\r\n\r\n\`\`\`terraform\r\n${output}\r\n\`\`\``;
+                  body = `#### Terraform Plan Succeeded ✅\r\n\r\nChanges are proposed in the plan below:\r\n\r\n<details><summary>詳細</summary>\`\`\`terraform\r\n${output}\r\n\`\`\`</details>`;
               }
             }
 
