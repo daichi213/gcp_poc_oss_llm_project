@@ -76,41 +76,34 @@ jobs:
           DELIMITER=$(openssl rand -hex 8)
           {
             echo "plan_output<<$DELIMITER"
-            echo '```terraform'
             echo "$PLAN_OUTPUT"
-            echo '```'
             echo "$DELIMITER"
           } >> "$GITHUB_OUTPUT"
 
       - name: 'Comment on PR'
         uses: actions/github-script@v7
         if: always() # 常に実行して結果をレポート
+        env:
+          PLAN_OUTPUT: ${{ steps.show.outputs.plan_output }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { init, validate, plan, show } = ${{ toJson(steps) }};
+            const { init, validate, plan } = ${{ toJson(steps) }};
+            const output = process.env.PLAN_OUTPUT;
             let body;
 
             if (init.outcome !== 'success') {
-              body = `#### Terraform Init Failed ❌
-
-              Please check the workflow logs for more details.`;
+              body = `#### Terraform Init Failed ❌\r\n\r\nPlease check the workflow logs for more details.`;
             } else if (validate.outcome !== 'success') {
-              body = `#### Terraform Validate Failed ❌
-
-              Please check the workflow logs for more details.`;
+              body = `#### Terraform Validate Failed ❌\r\n\r\nPlease check the workflow logs for more details.`;
             } else if (plan.outcome !== 'success') {
-              body = `#### Terraform Plan Failed ❌
-
-              An error occurred during the plan. Please check the workflow logs.`;
+              body = `#### Terraform Plan Failed ❌\r\n\r\nAn error occurred during the plan. Please check the workflow logs.`;
             } else {
-              const output = `${{ steps.show.outputs.plan_output }}`;
-              
-              body = `#### Terraform Plan Succeeded ✅
-
-              Changes are proposed in the plan below:
-
-              ${output}`;
+              if (output.includes("No changes. Infrastructure is up-to-date.")) {
+                  body = `#### Terraform Plan Succeeded ✅\r\n\r\n**No changes.** Your infrastructure matches the configuration.`;
+              } else {
+                  body = `#### Terraform Plan Succeeded ✅\r\n\r\nChanges are proposed in the plan below:\r\n\r\n\`\`\`terraform\r\n${output}\r\n\`\`\``;
+              }
             }
 
             github.rest.issues.createComment({
