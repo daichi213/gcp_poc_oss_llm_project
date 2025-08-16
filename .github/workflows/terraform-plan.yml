@@ -48,7 +48,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./google_cloud_infra/.terraform
-          key: ${{ runner.os }}-terraform-${{ hashFiles('./google_cloud_infra/.terraform.lock.hcl') }}
+          key: ${{ runner.os }}-terraform-${{ steps.get_branch.outputs.result }}-${{ hashFiles('./google_cloud_infra/.terraform.lock.hcl') }}
 
       - name: 'Terraform Init'
         id: init
