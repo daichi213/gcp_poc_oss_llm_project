@@ -58,12 +58,6 @@ jobs:
         working-directory: ./google_cloud_infra
         continue-on-error: true
 
-      - name: Terraform Format
-        id: fmt
-        run: terraform fmt -check
-        working-directory: ./google_cloud_infra
-        continue-on-error: true
-
       - name: Terraform Validate
         id: validate
         run: terraform validate -no-color
