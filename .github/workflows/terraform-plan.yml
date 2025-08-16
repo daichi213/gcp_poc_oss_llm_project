@@ -102,7 +102,7 @@ jobs:
             } else {
               body = `#### Terraform Plan Succeeded ✅
 
-              ${{ steps.format.show.plan_output }}`;
+              ${{ steps.show.outputs.plan_output }}`;
             }
 
             github.rest.issues.createComment({
