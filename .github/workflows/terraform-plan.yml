@@ -76,9 +76,7 @@ jobs:
           DELIMITER=$(openssl rand -hex 8)
           {
             echo "plan_output<<$DELIMITER"
-            echo '```terraform'
             echo "$PLAN_OUTPUT"
-            echo '```'
             echo "$DELIMITER"
           } >> "$GITHUB_OUTPUT"
 
@@ -105,7 +103,7 @@ jobs:
               An error occurred during the plan. Please check the workflow logs.`;
             } else {
               const output = `${{ steps.show.outputs.plan_output }}`;
-              
+
               body = `#### Terraform Plan Succeeded ✅
 
               Changes are proposed in the plan below:
