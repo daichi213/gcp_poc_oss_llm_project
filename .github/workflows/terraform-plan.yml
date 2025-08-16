@@ -72,7 +72,7 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan -no-color -out=tfplan
+        run: terraform plan -out=tfplan
         working-directory: ./google_cloud_infra
         continue-on-error: true
 
