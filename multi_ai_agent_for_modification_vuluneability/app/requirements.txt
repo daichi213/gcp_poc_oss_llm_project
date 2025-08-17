@@ -1,0 +1,8 @@
+# Gemini API
+google-generativeai
+
+# GitHub API
+PyGithub
+
+# SARIF file processing
+sarif-om
