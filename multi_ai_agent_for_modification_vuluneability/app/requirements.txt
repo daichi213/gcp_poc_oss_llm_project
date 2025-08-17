@@ -6,3 +6,7 @@ PyGithub
 
 # SARIF file processing
 sarif-om
+
+# LangChain
+langchain
+langchain-google-genai
