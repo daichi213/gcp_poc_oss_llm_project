@@ -141,7 +141,7 @@ def main():
     parser.add_argument("--sarif", required=True, help="Path to the SARIF file")
     parser.add_argument("--code-dir", required=True, help="Path to the source code directory")
     parser.add_argument("--max-retries", type=int, default=3, help="Maximum number of retries for the fix loop")
-    args = parser.parse()
+    args = parser.parse_args()
 
     try:
         llm = initialize_llm()
