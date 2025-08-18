@@ -44,7 +44,7 @@ jobs:
         # 'uses: docker://...'の代わりに'run'を使い、コンテナ内のスクリプトを直接実行します。
         # 'entrypoint.sh'の部分は、お使いのコンテナのDockerfileでENTRYPOINTとして
         # 指定されているスクリプト名やコマンドに置き換えてください。
-        run: python main.py
+        run: python /app/main.py
         env:
           # 'with'で渡していた引数は'INPUT_'プレフィックス付きの環境変数として渡します。
           # (ハイフン'-'はアンダースコア'_'に変換されます)
