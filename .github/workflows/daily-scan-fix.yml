@@ -4,6 +4,8 @@ on:
   schedule:
     - cron: '0 0 * * *' # 毎日0時(UTC)に実行
   workflow_dispatch: # 手動実行も可能にする
+env:
+  REGISTRY: ghcr.io
 
 jobs:
   scan-and-fix:
@@ -16,6 +18,13 @@ jobs:
     steps:
       - name: Checkout main branch
         uses: actions/checkout@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
