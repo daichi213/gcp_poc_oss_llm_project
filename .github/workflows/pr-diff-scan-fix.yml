@@ -18,6 +18,11 @@ jobs:
       contents: read
       packages: write
       pull-requests: write
+    container:
+      image: ghcr.io/daichi213/gcp_poc_oss_llm_project:codeql-fix-agent
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.ghcr_token }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
