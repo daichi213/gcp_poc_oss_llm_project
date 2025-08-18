@@ -39,13 +39,16 @@ jobs:
           category: "/language:${{matrix.language}}"
           output: ../results
           upload: false # 結果はアップロードしない
-
       - name: Run AI Agent to Fix Vulnerabilities
-        uses: docker://ghcr.io/daichi213/gcp_poc_oss_llm_project:codeql-fix-agent # GHCRのイメージパスを指定
-        with:
-          sarif: ../results/sarif.json
-          code-dir: .
+        # 'uses: docker://...'の代わりに'run'を使い、コンテナ内のスクリプトを直接実行します。
+        # 'entrypoint.sh'の部分は、お使いのコンテナのDockerfileでENTRYPOINTとして
+        # 指定されているスクリプト名やコマンドに置き換えてください。
+        run: /entrypoint.sh
         env:
+          # 'with'で渡していた引数は'INPUT_'プレフィックス付きの環境変数として渡します。
+          # (ハイフン'-'はアンダースコア'_'に変換されます)
+          INPUT_SARIF: results/sarif.json # 上記outputのパス修正に合わせて変更
+          INPUT_CODE-DIR: .
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
       - name: Create Pull Request to feature branch
