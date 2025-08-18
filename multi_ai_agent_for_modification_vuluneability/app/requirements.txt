@@ -1,0 +1,12 @@
+# Gemini API
+google-generativeai
+
+# GitHub API
+PyGithub
+
+# SARIF file processing
+sarif-om
+
+# LangChain
+langchain
+langchain-google-genai
