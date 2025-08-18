@@ -13,6 +13,10 @@ jobs:
       fail-fast: false
       matrix:
         language: [ 'actions' ]
+    permissions:
+      contents: read
+      packages: write
+      pull-requests: write
     steps:
       - name: Checkout main branch
         uses: actions/checkout@v3
