@@ -115,8 +115,18 @@ docker run --rm \
 
 **重要:** ワークフローを有効にするには、YAMLファイル内のDockerイメージ名を、あなたがビルドしてプッシュしたGitHub Container Registry (GHCR) のイメージパスに書き換える必要があります。
 
-1.  DockerイメージをGHCRにプッシュします。
+1.  DockerイメージをGHCRにプッシュします。([Login参考](https://docs.github.com/ja/packages/working-with-a-github-packages-registry/working-with-the-container-registry#personal-access-token-classic))
+    - Bash
     ```bash
+    export CR_PAT=YOUR_PAT
+    echo $CR_PAT | docker login ghcr.io -u USERNAME --password-stdin
+    docker tag codeql-fix-agent ghcr.io/your-username/your-repo-name:latest
+    docker push ghcr.io/your-username/your-repo-name:latest
+    ```
+    - PowerShell
+    ```powershell
+    $passwd='<YOUR_PAT>'
+    echo $passwd | docker login ghcr.io -u <USERNAME> --password-stdin
     docker tag codeql-fix-agent ghcr.io/your-username/your-repo-name:latest
     docker push ghcr.io/your-username/your-repo-name:latest
     ```
