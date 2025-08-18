@@ -26,16 +26,16 @@ jobs:
       options: --user root
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }} # プロジェクトに合わせて言語を指定
 
       # PRの差分のみをスキャンする設定
       - name: Perform CodeQL Analysis on PR diff
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
         with:
           category: "/language:${{matrix.language}}"
           output: ../results
