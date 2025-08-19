@@ -1,0 +1,83 @@
+name: CodeQL Autofix
+
+on:
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+permissions:
+  security-events: write
+  pull-requests: write
+  actions: read
+  contents: read
+
+jobs:
+  autofix:
+    name: Analyze and Suggest Fix
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'python' ] # 対象言語をここに指定
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          # categoryを定義して、後でSARIFファイルを見つけやすくする
+          category: "/language:${{matrix.language}}"
+
+      # Autobuildはコンパイル言語で有効。Pythonでは通常不要だが、
+      # 依存関係のインストールなどを自動で行う場合があるため残しておくと便利。
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        id: analyze
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"
+
+      # ----------------------------------------------------------------
+      #  以下のステップは、CodeQLが脆弱性を検出し、analyzeステップが
+      #  失敗した場合にのみ実行される (continue-on-errorは未指定)
+      # ----------------------------------------------------------------
+
+      - name: AI Fix - Vulnerabilities detected
+        if: failure()
+        run: echo "Vulnerabilities detected. Starting AI fix process..."
+
+      - name: AI Fix - Set up Python
+        if: failure()
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: AI Fix - Install dependencies
+        if: failure()
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r autofix_agent/requirements.txt
+
+      - name: AI Fix - Run Agent to Generate Fix
+        if: failure()
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # CodeQLのSARIFファイルは、`../results` に `results.sarif` として保存される
+          # ワークスペースのルートから見た相対パスを指定する
+          SARIF_FILE_PATH: ${{ runner.temp }}/results/results.sarif
+        run: |
+          python autofix_agent/main.py
+
+      - name: AI Fix - Create Comment on PR
+        if: failure()
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-file: suggestion.txt
+          token: ${{ secrets.GITHUB_TOKEN }}
